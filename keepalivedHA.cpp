@@ -4,12 +4,19 @@
 #include <ws2tcpip.h>  
 #include <csignal>
 #include <Windows.h>
+#include <sstream>
+#include <locale>
+#include <codecvt>
 #include "vrrp.h"
 #include "conf.h"
 #include "vrrp_interface.h"
 #pragma comment(lib, "pthreadVC2.lib")
 #pragma comment(lib, "ws2_32.lib")
 using namespace std;
+
+#define SERVICE_NAME "keepalived-heli-service"
+SERVICE_STATUS ServiceStatus;
+SERVICE_STATUS_HANDLE hServiceStatusHandle;
 
 
 pthread_t tids[5];
@@ -42,22 +49,20 @@ void* recv_adv(void* args) {
     return 0;
 }
 
-//volatile sig_atomic_t gSignalStatus;
-//
-//void signal_handler(int signal)
-//{
-//    gSignalStatus = signal;
-//}
 
-BOOL console_handler(DWORD ctrl_type)
+void WINAPI ServiceHandler(DWORD fdwControl)
 {
-    cout << "exit(" << ctrl_type << ") keepalivedHA..." << endl;
-
-    switch (ctrl_type)
+    switch (fdwControl)
     {
-    case CTRL_CLOSE_EVENT:
-    case CTRL_C_EVENT:
-        cout << "exit(" << ctrl_type << ") keepalivedHA..." << endl;
+    case SERVICE_CONTROL_STOP:
+    case SERVICE_CONTROL_SHUTDOWN:
+        ServiceStatus.dwWin32ExitCode = 0;
+        ServiceStatus.dwCurrentState = SERVICE_STOPPED;
+        ServiceStatus.dwCheckPoint = 0;
+        ServiceStatus.dwWaitHint = 0;
+
+        //add you quit code here
+        cout << "exit(" << fdwControl << ") keepalivedHA..." << endl;
         pthread_cancel(tids[0]);
         pthread_cancel(tids[1]);
         for (int i = 0; i < conf.instance.virtual_ipaddress.size(); i++) {
@@ -66,27 +71,54 @@ BOOL console_handler(DWORD ctrl_type)
         // 发送权重0的adv
         vrrp_send_adv(conf, 0);
         running = false;
-        return TRUE;
+        break;
     default:
-        return FALSE;
+        return;
+    };
+    if (!SetServiceStatus(hServiceStatusHandle, &ServiceStatus))
+    {
+        DWORD nError = GetLastError();
     }
-
 }
-int main()
+
+// 获取当前可执行文件的路径
+std::wstring getExecutablePath()
 {
-    // 注册控制事件处理函数
-    SetConsoleCtrlHandler(console_handler, TRUE);
-    // 设置信号处理函数
-    //signal(SIGINT, signal_handler);
-    conf = read_vrrp_conf("ha.conf");
+    wchar_t buffer[MAX_PATH] = { 0 };
+    GetModuleFileNameW(NULL, buffer, MAX_PATH);
+    std::wstring path(buffer);
+    return path.substr(0, path.find_last_of(L"\\/"));
+}
+
+// 拼接绝对路径
+std::wstring getAbsolutePath(const std::wstring& relativePath)
+{
+    std::wstring absolutePath = getExecutablePath() + L"\\" + relativePath;
+    return absolutePath;
+}
+
+std::string wstringToString(const std::wstring& wstr)
+{
+    // 创建一个宽字符转换器
+    std::wstring_convert<std::codecvt_utf8<wchar_t>> converter;
+    // 将宽字符串转换为 UTF-8 编码的窄字符串
+    std::string str = converter.to_bytes(wstr);
+    return str;
+}
+
+// 程序主函数
+void keepalived_ha() {
+    wstring path = getAbsolutePath(L"ha.conf");
+    conf = read_vrrp_conf(wstringToString(path));
     print_vrrp_conf(conf);
     conf.preempt = false;
+
     if (conf.instance.state == MASTER || conf.instance.state == "MASTER") {
         for (int i = 0; i < conf.instance.virtual_ipaddress.size(); i++) {
             //remove_vip(conf.instance.virtual_ipaddress[i], conf.instance.interface_name);
             //Sleep(100);
             add_vip(conf.instance.virtual_ipaddress[i], "255.255.255.0", conf.instance.interface_name);
-         }
+        }
         pthread_create(&tids[0], NULL, send_adv, (void*)&conf);
         Sleep(500);
         pthread_create(&tids[1], NULL, recv_adv, (void*)&conf);
@@ -100,25 +132,51 @@ int main()
         pthread_create(&tids[1], NULL, recv_adv, (void*)&conf);
     }
 
-    while (running) {
-        Sleep(1000);
-    }
-    // 等待信号
-    //while (true)
-    //{
-    //    if (gSignalStatus == SIGINT) {
-    //        cout << "exit keepalivedHA..." << endl;
-    //        pthread_cancel(tids[0]);
-    //        pthread_cancel(tids[1]);
-    //        for (int i = 0; i < conf.instance.virtual_ipaddress.size(); i++) {
-    //            remove_vip(conf.instance.virtual_ipaddress[i], conf.instance.interface_name);
-    //        }
-    //        // 发送权重0的adv
-    //        vrrp_send_adv(conf, 0);
-    //        Sleep(500);
-    //        break;
-    //    }
-    //    Sleep(300);
+    //while (running) {
+    //    Sleep(1000);
     //}
+}
+
+void WINAPI service_main(int argc, char** argv)
+{
+    ServiceStatus.dwServiceType = SERVICE_WIN32;
+    ServiceStatus.dwCurrentState = SERVICE_START_PENDING;
+    ServiceStatus.dwControlsAccepted = SERVICE_ACCEPT_STOP | SERVICE_ACCEPT_SHUTDOWN | SERVICE_ACCEPT_PAUSE_CONTINUE;
+    ServiceStatus.dwWin32ExitCode = 0;
+    ServiceStatus.dwServiceSpecificExitCode = 0;
+    ServiceStatus.dwCheckPoint = 0;
+    ServiceStatus.dwWaitHint = 0;
+    hServiceStatusHandle = RegisterServiceCtrlHandler((LPWSTR) SERVICE_NAME, ServiceHandler);
+    if (hServiceStatusHandle == 0)
+    {
+        DWORD nError = GetLastError();
+    }
+    //main
+    keepalived_ha();
+
+    // Initialization complete - report running status 
+    ServiceStatus.dwCurrentState = SERVICE_RUNNING;
+    ServiceStatus.dwCheckPoint = 0;
+    ServiceStatus.dwWaitHint = 9000;
+    if (!SetServiceStatus(hServiceStatusHandle, &ServiceStatus))
+    {
+        DWORD nError = GetLastError();
+    }
+
+}
+
+
+int main(int argc, const char* argv[])
+{
+    SERVICE_TABLE_ENTRY ServiceTable[2];
+
+    ServiceTable[0].lpServiceName = (LPWSTR) SERVICE_NAME;
+    ServiceTable[0].lpServiceProc = (LPSERVICE_MAIN_FUNCTION)service_main;
+
+    ServiceTable[1].lpServiceName = NULL;
+    ServiceTable[1].lpServiceProc = NULL;
+
+    StartServiceCtrlDispatcher(ServiceTable);
+
     return 0;
 }
