@@ -15,7 +15,7 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="keepalivedHA.cpp">
+    <ClCompile Include="keepalived.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="vrrp.cpp">
@@ -27,7 +27,7 @@
     <ClCompile Include="vrrp_interface.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="test.cpp">
+    <ClCompile Include="main.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>

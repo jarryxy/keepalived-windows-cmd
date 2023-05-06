@@ -138,8 +138,8 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="conf.cpp" />
-    <ClCompile Include="keepalivedHA.cpp" />
-    <ClCompile Include="test.cpp" />
+    <ClCompile Include="keepalived.cpp" />
+    <ClCompile Include="main.cpp" />
     <ClCompile Include="vrrp.cpp" />
     <ClCompile Include="vrrp_interface.cpp" />
   </ItemGroup>

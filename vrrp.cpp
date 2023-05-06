@@ -91,7 +91,7 @@ int vrrp_send_pkt(vrrp_conf conf, char* buffer, int buflen) {
 	return ret;
 }
 
-void vrrp_build_pkt(vrrp_instance instance, char *buffer, uint8_t priority) {
+void vrrp_build_pkt(vrrp_instance instance, char* buffer, uint8_t priority) {
 	//vrrp_hdr hdr;
 	//hdr.vrid = instance.virtual_router_id;
 	//hdr.priority = instance.priority;
@@ -126,8 +126,8 @@ void vrrp_build_pkt(vrrp_instance instance, char *buffer, uint8_t priority) {
 		int i3 = std::stoi(s3);
 		int i4 = std::stoi(s4);
 		int mask = std::stoi(ip.substr(pos4 + 1));
-		buffer[4 * (i+1)+2] = i1;
-		buffer[4* (i + 1) +3] = i2;
+		buffer[4 * (i + 1) + 2] = i1;
+		buffer[4 * (i + 1) + 3] = i2;
 		buffer[4 * (i + 1) + 4] = i3;
 		buffer[4 * (i + 1) + 5] = i4;
 	}
@@ -135,27 +135,28 @@ void vrrp_build_pkt(vrrp_instance instance, char *buffer, uint8_t priority) {
 }
 
 
-int vrrp_send_adv(vrrp_conf& conf,uint8_t priority) {
+int vrrp_send_adv(vrrp_conf& conf, uint8_t priority) {
 	int buflen = 6 + 4 * conf.instance.virtual_ipaddress.size();
-	char * buffer = (char*)malloc(sizeof(char)* buflen);
+	char* buffer = (char*)malloc(sizeof(char) * buflen);
 	vrrp_build_pkt(conf.instance, buffer, priority);
 	int i = vrrp_send_pkt(conf, buffer, buflen);
 	return i;
 }
 
 
-void preempt_watch(int* count,vrrp_conf* conf) {
+void preempt_watch(int* count, vrrp_conf* conf) {
 	while (true)
 	{
-		cout << "preempt_watch: " << *count <<" state: "<< conf->instance.state << endl;
+		cout << "preempt_watch: " << *count << " state: " << conf->instance.state << endl;
 		Sleep(1000);
-		if (*count <= 0  ) {
+		if (*count <= 0) {
 			if (conf->instance.state == "BACKUP" || conf->instance.state == BACKUP) {
 				(*conf).preempt = false;
 				conf->instance.state = MASTER;
 				for (int i = 0; i < (*conf).instance.virtual_ipaddress.size(); i++) {
 					//remove_vip(conf->instance.virtual_ipaddress[i], conf->instance.interface_name);
 					//Sleep(300);
+					Sleep(100);
 					add_vip((*conf).instance.virtual_ipaddress[i], "255.255.255.0", (*conf).instance.interface_name);
 				}
 			}
@@ -166,7 +167,7 @@ void preempt_watch(int* count,vrrp_conf* conf) {
 	}
 }
 
-void vrrp_recv_adv(vrrp_conf &conf) {
+void vrrp_recv_adv(vrrp_conf& conf) {
 	sockaddr_in addr;
 	addr.sin_family = AF_INET;
 	inet_pton(AF_INET, conf.instance.interface_v.c_str(), &addr.sin_addr.S_un.S_addr);
@@ -175,7 +176,7 @@ void vrrp_recv_adv(vrrp_conf &conf) {
 	int ret = 0;
 	int len = sizeof(sockaddr);
 	char recv[1024] = { 0 };
-	int count = 3;
+	int count = 2 + conf.instance.advert_int;
 	std::thread t(preempt_watch, &count, &conf);
 	t.detach();
 	cout << "recv start" << endl;
@@ -191,11 +192,12 @@ void vrrp_recv_adv(vrrp_conf &conf) {
 		// Only message with the same vrid are accepted
 		if (hdr.vrid == conf.instance.virtual_router_id) {
 			if (hdr.priority > conf.instance.priority) {
-				count = 3;
+				int count = 2 + conf.instance.advert_int;
 				conf.preempt = true;
 				if (conf.instance.state == "MASTER" || conf.instance.state == MASTER) {
 					conf.instance.state = BACKUP;
 					for (int i = 0; i < conf.instance.virtual_ipaddress.size(); i++) {
+						Sleep(100);
 						remove_vip(conf.instance.virtual_ipaddress[i], conf.instance.interface_name);
 					}
 				}
@@ -218,11 +220,11 @@ vrrp_hdr vrrp_recv_parse(char* recv) {
 	hdr.chksum = (static_cast<uint16_t>(recv[4]) << 8) | static_cast<uint16_t>(recv[5]);
 	std::ostringstream oss;
 	for (int i = 0; i < hdr.naddr; i++) {
-		uint8_t str[] = { static_cast<uint8_t>(recv[4 * (i + 1) + 2]), 
+		uint8_t str[] = { static_cast<uint8_t>(recv[4 * (i + 1) + 2]),
 			static_cast<uint8_t>(recv[4 * (i + 1) + 3]), static_cast<uint8_t>(recv[4 * (i + 1) + 4]),
 			static_cast<uint8_t>(recv[4 * (i + 1) + 5]) };
 		oss << std::dec << static_cast<int>(str[0]) << "." << static_cast<int>(str[1]) << "."
-		<< static_cast<int>(str[2]) << "." << static_cast<int>(str[3]);
+			<< static_cast<int>(str[2]) << "." << static_cast<int>(str[3]);
 		hdr.ip_addr.push_back(oss.str());
 		oss.str("");
 	}
