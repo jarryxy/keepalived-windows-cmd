@@ -1,0 +1,65 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.5.33530.505
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "keepalivedHA", "keepalivedHA.vcxproj", "{38219AD8-2A46-419D-88E9-4B9667065C74}"
+EndProject
+Project("{54435603-DBB4-11D2-8724-00A0C9A8B90C}") = "keepalivedHA-setup", "..\keepalivedHA-setup\keepalivedHA-setup.vdproj", "{5F4656BC-5AA5-45F0-AD66-B5D7C32494C3}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "keepalivedHA-service", "..\keepalivedHA-service\keepalivedHA-service.csproj", "{832242AF-F57F-4D9D-B62D-E74330D7F79E}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Debug|x64 = Debug|x64
+		Debug|x86 = Debug|x86
+		Release|Any CPU = Release|Any CPU
+		Release|x64 = Release|x64
+		Release|x86 = Release|x86
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{38219AD8-2A46-419D-88E9-4B9667065C74}.Debug|Any CPU.ActiveCfg = Debug|x64
+		{38219AD8-2A46-419D-88E9-4B9667065C74}.Debug|Any CPU.Build.0 = Debug|x64
+		{38219AD8-2A46-419D-88E9-4B9667065C74}.Debug|x64.ActiveCfg = Debug|x64
+		{38219AD8-2A46-419D-88E9-4B9667065C74}.Debug|x64.Build.0 = Debug|x64
+		{38219AD8-2A46-419D-88E9-4B9667065C74}.Debug|x86.ActiveCfg = Debug|Win32
+		{38219AD8-2A46-419D-88E9-4B9667065C74}.Debug|x86.Build.0 = Debug|Win32
+		{38219AD8-2A46-419D-88E9-4B9667065C74}.Release|Any CPU.ActiveCfg = Release|x64
+		{38219AD8-2A46-419D-88E9-4B9667065C74}.Release|Any CPU.Build.0 = Release|x64
+		{38219AD8-2A46-419D-88E9-4B9667065C74}.Release|x64.ActiveCfg = Release|x64
+		{38219AD8-2A46-419D-88E9-4B9667065C74}.Release|x64.Build.0 = Release|x64
+		{38219AD8-2A46-419D-88E9-4B9667065C74}.Release|x86.ActiveCfg = Release|Win32
+		{38219AD8-2A46-419D-88E9-4B9667065C74}.Release|x86.Build.0 = Release|Win32
+		{5F4656BC-5AA5-45F0-AD66-B5D7C32494C3}.Debug|Any CPU.ActiveCfg = Debug
+		{5F4656BC-5AA5-45F0-AD66-B5D7C32494C3}.Debug|Any CPU.Build.0 = Debug
+		{5F4656BC-5AA5-45F0-AD66-B5D7C32494C3}.Debug|x64.ActiveCfg = Debug
+		{5F4656BC-5AA5-45F0-AD66-B5D7C32494C3}.Debug|x64.Build.0 = Debug
+		{5F4656BC-5AA5-45F0-AD66-B5D7C32494C3}.Debug|x86.ActiveCfg = Debug
+		{5F4656BC-5AA5-45F0-AD66-B5D7C32494C3}.Debug|x86.Build.0 = Debug
+		{5F4656BC-5AA5-45F0-AD66-B5D7C32494C3}.Release|Any CPU.ActiveCfg = Release
+		{5F4656BC-5AA5-45F0-AD66-B5D7C32494C3}.Release|Any CPU.Build.0 = Release
+		{5F4656BC-5AA5-45F0-AD66-B5D7C32494C3}.Release|x64.ActiveCfg = Release
+		{5F4656BC-5AA5-45F0-AD66-B5D7C32494C3}.Release|x64.Build.0 = Release
+		{5F4656BC-5AA5-45F0-AD66-B5D7C32494C3}.Release|x86.ActiveCfg = Release
+		{5F4656BC-5AA5-45F0-AD66-B5D7C32494C3}.Release|x86.Build.0 = Release
+		{832242AF-F57F-4D9D-B62D-E74330D7F79E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{832242AF-F57F-4D9D-B62D-E74330D7F79E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{832242AF-F57F-4D9D-B62D-E74330D7F79E}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{832242AF-F57F-4D9D-B62D-E74330D7F79E}.Debug|x64.Build.0 = Debug|Any CPU
+		{832242AF-F57F-4D9D-B62D-E74330D7F79E}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{832242AF-F57F-4D9D-B62D-E74330D7F79E}.Debug|x86.Build.0 = Debug|Any CPU
+		{832242AF-F57F-4D9D-B62D-E74330D7F79E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{832242AF-F57F-4D9D-B62D-E74330D7F79E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{832242AF-F57F-4D9D-B62D-E74330D7F79E}.Release|x64.ActiveCfg = Release|Any CPU
+		{832242AF-F57F-4D9D-B62D-E74330D7F79E}.Release|x64.Build.0 = Release|Any CPU
+		{832242AF-F57F-4D9D-B62D-E74330D7F79E}.Release|x86.ActiveCfg = Release|Any CPU
+		{832242AF-F57F-4D9D-B62D-E74330D7F79E}.Release|x86.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {11E01309-0DD4-4087-8BA7-2976AF80DF80}
+	EndGlobalSection
+EndGlobal
